@@ -10,7 +10,6 @@ import (
 
 type PhotoController struct{}
 
-// Create digunakan untuk menambahkan foto profil oleh pengguna yang telah login
 func (p *PhotoController) Create(c *gin.Context) {
     currentUser := c.MustGet("user").(models.User)
     var photo app.PhotoAdded
@@ -20,14 +19,12 @@ func (p *PhotoController) Create(c *gin.Context) {
         return
     }
 
-    // Dapatkan koneksi database
     db, err := database.ConnectDB()
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
         return
     }
 
-    // Konversi struct dari app.PhotoAdded ke models.Photo
     photoModel := models.Photo{
         Title:    photo.Title,
         Caption:  photo.Caption,
@@ -43,9 +40,7 @@ func (p *PhotoController) Create(c *gin.Context) {
     c.JSON(http.StatusCreated, photoModel)
 }
 
-// GetAll digunakan untuk mendapatkan semua foto
 func (p *PhotoController) GetAll(c *gin.Context) {
-    // Dapatkan koneksi database
     db, err := database.ConnectDB()
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
@@ -61,7 +56,6 @@ func (p *PhotoController) GetAll(c *gin.Context) {
     c.JSON(http.StatusOK, photos)
 }
 
-// Update digunakan untuk mengubah foto oleh pemiliknya
 func (p *PhotoController) Update(c *gin.Context) {
     currentUser := c.MustGet("user").(models.User)
     photoID := c.Param("photoId")
@@ -72,7 +66,6 @@ func (p *PhotoController) Update(c *gin.Context) {
         return
     }
 
-    // Dapatkan koneksi database
     db, err := database.ConnectDB()
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
@@ -85,7 +78,6 @@ func (p *PhotoController) Update(c *gin.Context) {
         return
     }
 
-    // Perbarui data foto dalam database
     existingPhoto.Title = updatedPhoto.Title
     existingPhoto.Caption = updatedPhoto.Caption
     existingPhoto.PhotoUrl = updatedPhoto.PhotoUrl
@@ -94,12 +86,10 @@ func (p *PhotoController) Update(c *gin.Context) {
     c.JSON(http.StatusOK, existingPhoto)
 }
 
-// Delete digunakan untuk menghapus foto oleh pemiliknya
 func (p *PhotoController) Delete(c *gin.Context) {
     currentUser := c.MustGet("user").(models.User)
     photoID := c.Param("photoId")
 
-    // Dapatkan koneksi database
     db, err := database.ConnectDB()
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})

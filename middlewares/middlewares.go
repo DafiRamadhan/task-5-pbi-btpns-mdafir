@@ -7,7 +7,7 @@ import (
     "task-5-pbi-btpns-mdafir/models"
     "net/http"
     "strings"
-    "strconv" // Import paket strconv untuk konversi tipe data
+    "strconv"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
@@ -19,7 +19,6 @@ func AuthMiddleware() gin.HandlerFunc {
             return
         }
 
-        // Parse token
         tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
         token, err := jwt.ParseWithClaims(tokenString, &helpers.CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
             return []byte("your_secret_key"), nil
@@ -32,7 +31,6 @@ func AuthMiddleware() gin.HandlerFunc {
         }
 
         if claims, ok := token.Claims.(*helpers.CustomClaims); ok && token.Valid {
-            // Konversi claims.UserID dari string ke uint
             userID, err := strconv.ParseUint(claims.UserID, 10, 32)
             if err != nil {
                 c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})

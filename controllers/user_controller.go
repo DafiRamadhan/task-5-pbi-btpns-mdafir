@@ -12,7 +12,6 @@ import (
 
 type UserController struct{}
 
-// Register digunakan untuk membuat akun pengguna baru
 func (u *UserController) Register(c *gin.Context) {
 	var user app.UserRegister
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -20,28 +19,24 @@ func (u *UserController) Register(c *gin.Context) {
 		return
 	}
 
-	// Hash password sebelum menyimpannya ke database
 	hashedPassword, err := helpers.HashPassword(user.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
-	// Konversi struct dari app.UserRegister ke models.User
 	userModel := models.User{
 		Username: user.Username,
 		Email:    user.Email,
 		Password: hashedPassword,
 	}
 
-	// Dapatkan koneksi database
 	db, err := database.ConnectDB()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
-	// Simpan pengguna ke database
 	if err := db.Create(&userModel).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
@@ -50,7 +45,6 @@ func (u *UserController) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, userModel)
 }
 
-// Login digunakan untuk otentikasi pengguna
 func (u *UserController) Login(c *gin.Context) {
 	var user app.UserLogin
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -58,7 +52,6 @@ func (u *UserController) Login(c *gin.Context) {
 		return
 	}
 
-	// Dapatkan koneksi database
 	db, err := database.ConnectDB()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
@@ -76,8 +69,7 @@ func (u *UserController) Login(c *gin.Context) {
 		return
 	}
 
-	// Buat token JWT dan kirimkan sebagai respons
-	userIDStr := strconv.FormatUint(uint64(userModel.ID), 10) // Konversi user.ID menjadi string
+	userIDStr := strconv.FormatUint(uint64(userModel.ID), 10)
 	token, err := helpers.GenerateToken(userIDStr)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
@@ -87,7 +79,6 @@ func (u *UserController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-// Update digunakan untuk mengubah data pengguna
 func (u *UserController) Update(c *gin.Context) {
 	currentUser := c.MustGet("user").(models.User)
 	var user app.UserUpdate
@@ -96,41 +87,35 @@ func (u *UserController) Update(c *gin.Context) {
 		return
 	}
 
-	// Periksa apakah pengguna yang diotorisasi sedang mencoba memperbarui data pengguna lain
 	if currentUser.Email != user.Email {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	// Dapatkan koneksi database
 	db, err := database.ConnectDB()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
-	// Perbarui data pengguna dalam database
 	db.Model(&currentUser).Updates(models.User{
 		Username: user.Username,
 		Email:    user.Email,
-		Password: user.Password, // Hash password menggunakan MD5 sebelum disimpan
+		Password: user.Password,
 	})
 
 	c.JSON(http.StatusOK, currentUser)
 }
 
-// Delete digunakan untuk menghapus akun pengguna
 func (u *UserController) Delete(c *gin.Context) {
 	currentUser := c.MustGet("user").(models.User)
 
-	// Dapatkan koneksi database
 	db, err := database.ConnectDB()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
-	// Hapus akun pengguna dari database
 	db.Delete(&currentUser)
 	c.JSON(http.StatusNoContent, gin.H{})
 }

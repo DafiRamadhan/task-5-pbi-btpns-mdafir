@@ -9,10 +9,8 @@ import (
 func SetupRouter() *gin.Engine {
     r := gin.Default()
 
-    // Middleware untuk otentikasi JWT
     r.Use(middlewares.AuthMiddleware())
 
-    // Definisikan route untuk endpoint users dan photos
     userController := controllers.UserController{}
     photoController := controllers.PhotoController{}
 

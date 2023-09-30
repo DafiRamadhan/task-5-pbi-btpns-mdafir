@@ -5,20 +5,18 @@ import (
     "time"
 )
 
-var jwtKey = []byte("your_secret_key") // Ganti dengan kunci rahasia yang sesuai
+var jwtKey = []byte("your_secret_key")
 
-// CustomClaims berisi informasi yang akan disimpan dalam token JWT
 type CustomClaims struct {
     UserID string `json:"user_id"`
     jwt.StandardClaims
 }
 
-// GenerateToken digunakan untuk membuat token JWT
 func GenerateToken(userID string) (string, error) {
     claims := &CustomClaims{
         UserID: userID,
         StandardClaims: jwt.StandardClaims{
-            ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), // Token berlaku selama 1 hari
+            ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
         },
     }
 
@@ -26,7 +24,6 @@ func GenerateToken(userID string) (string, error) {
     return token.SignedString(jwtKey)
 }
 
-// VerifyToken digunakan untuk memverifikasi token JWT
 func VerifyToken(tokenString string) (*CustomClaims, error) {
     token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
         return jwtKey, nil
